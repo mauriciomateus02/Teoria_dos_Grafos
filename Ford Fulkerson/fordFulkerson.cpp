@@ -70,11 +70,22 @@ int fordFulkerson(FFgraph graph, int start_v, int destiny_v){
 
     return maxFlow;
 }
+void help()
+{
+    printf(" > <arquivo> : redireciona a saida para o arquivo\n");
+    printf(" < <arquivo> : indica o arquivo que contem o grafo de entrada\n");
+}
 
-int main() {
+int main(int argc, char *argv[]) {
     FFgraph myGraph;
 
-    int u, v, weight, start_v, destiny_v;
+    int u, v, weight, start_v, destiny_v,i;
+
+     for (i = 1; i < argc; i++)
+    {
+        if (!strcmp(argv[i], "-h"))
+                help();
+    }
 
     cin >> myGraph.V >> myGraph.E;
 
