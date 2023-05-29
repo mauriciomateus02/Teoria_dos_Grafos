@@ -1,9 +1,6 @@
-# My first makefile
-output: fordFulkerson.o
-	g++ fordFulkerson.o -o fordFulkerson.bin
-
-fordFulkerson.o: fordFulkerson.cpp
-	g++ -c fordFulkerson.cpp
-
+compile:
+	gcc ford.c -o fordfulkerson.bin
+run:
+	./fordfulkerson.bin
 clean:
-	rm *.o fordFulkerson
+	rm fordfulkerson.bin
