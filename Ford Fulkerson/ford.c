@@ -174,7 +174,8 @@ int main(int argc, char *argv[])
         myGraph.adj_list[u][v] = weight;
     }
 
-    fscanf(input, "%d %d", &start_v, &destiny_v);
+    if(destiny_v == -1 || start_v == -1)
+        fscanf(input, "%d %d", &start_v, &destiny_v);
 
     if (output != NULL)
         fprintf(output, "O fluxo máximo do vetor: %d para o vetor: %d é: %d\n", start_v, destiny_v, fordFulkerson(myGraph, start_v, destiny_v));
