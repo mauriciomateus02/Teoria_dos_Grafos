@@ -1,213 +1,200 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
-struct No
+struct Edge
 {
-    int sai;
-    int chega;
-    int peso;
+    int src;
+    int dest;
+    int weight;
+} typedef Edge;
 
-} typedef No;
-
-int encontra(int index, int no[])
+int findSet(int v, int set[])
 {
-    if (index != no[index])
-        no[index] = encontra(no[index], no);
-    return no[index];
-}
-
-void uneEncontrado(int i, int j, int no[])
-{
-    int xi = encontra(i, no);
-    int xj = encontra(j, no);
-    no[xi] = xj;
-}
-
-int comparaPeso(const void *i, const void *j)
-{
-    struct No *ir = (struct No *)i;
-    struct No *volta = (struct No *)j;
-
-    return (ir->peso - volta->peso);
-}
-
-int compararRaiz(const void *i, const void *j)
-{
-    struct No *ir = (struct No *)i;
-    struct No *volta = (struct No *)j;
-    if (ir->sai == volta->sai)
+    if (set[v] != v)
     {
-        return (ir->chega - volta->chega);
+        set[v] = findSet(set[v], set);
     }
-    return (ir->sai - volta->sai);
+    return set[v];
 }
 
-void Kruskal(No vector[], No MST[], int *cont, int numVertices, int numArestas)
+void joinSets(int u, int v, int set[])
 {
-    int valor[numVertices + 1], i, numArestasMst = 0;
+    int source_u = findSet(u, set);
+    int source_v = findSet(v, set);
+    set[source_u] = source_v;
+}
 
-    for (i = 0; i < numVertices; i++)
+int compareEdgesSource(const void *a, const void *b)
+{
+    Edge *a1 = (Edge *)a;
+    Edge *a2 = (Edge *)b;
+    if (a1->src == a2->src)
     {
-        valor[i] = i;
+        return a1->dest - a2->dest;
     }
-    qsort(vector, numArestas, sizeof(No), comparaPeso);
+    return a1->src - a2->src;
+}
 
-    for (i = 0; i < numArestas; i++)
+int compareEdges(const void *a, const void *b)
+{
+    Edge *a1 = (Edge *)a;
+    Edge *a2 = (Edge *)b;
+    return a1->weight - a2->weight;
+}
+
+void printOut(Edge MST[], int cost, int numVertex, int inOrderAGM, int printTerminal, FILE *outputFile)
+{
+    if (inOrderAGM)
     {
-        int saio = vector[i].sai;
-        int chego = vector[i].chega;
-        int peso = vector[i].peso;
+        qsort(MST, numVertex - 1, sizeof(Edge), compareEdgesSource);
+    }
 
-        if (encontra(saio, valor) != encontra(chego, valor))
+    if (printTerminal)
+    {
+        if (inOrderAGM)
         {
-            MST[numArestasMst++] = vector[i];
-            *cont += vector[i].peso;
-            uneEncontrado(saio, chego, valor);
-        }
-    }
-}
-
-void MostrarCaminho(No vertices[], bool ordem, int numVert, int cost, bool mostrarTela, FILE *out)
-{
-    int i;
-    if (ordem)
-    {
-        qsort(vertices, numVert - 1, sizeof(No), compararRaiz);
-
-        if (mostrarTela)
-        {
-            for (i = 0; i < numVert - 1; i++)
+            for (int i = 0; i < numVertex - 1; i++)
             {
-                printf("(%d,%d) ", vertices[i].sai, vertices[i].chega);
+                printf("(%d,%d) ", MST[i].src, MST[i].dest);
             }
+            printf("\n");
+            return;
+        }
+        printf("%d\n", cost);
+    }
+    else
+    {
+        if (inOrderAGM)
+        {
+            for (int i = 0; i < numVertex - 1; i++)
+            {
+                fprintf(outputFile, "(%d,%d) ", MST[i].src, MST[i].dest);
+            }
+            fclose(outputFile);
         }
         else
         {
-            for (i = 0; i < numVert - 1; i++)
-            {
-                fprintf(out, "(%d,%d) ", vertices[i].sai, vertices[i].chega);
-            }
-            fclose(out);
+            fprintf(outputFile, "%d\n", cost);
+            fclose(outputFile);
         }
     }
+}
 
-    if (!ordem && mostrarTela)
+void Kruskal(Edge edges[], Edge MST[], int *cost, int numVertex, int numEdges)
+{
+    int set[numVertex + 1];
+
+    for (int i = 0; i <= numVertex; i++)
     {
-        printf("%d\n", cost);
+        set[i] = i;
     }
-    if(!ordem && !mostrarTela)
+    qsort(edges, numEdges, sizeof(Edge), compareEdges);
+
+    int numEdgesMST = 0;
+    for (int i = 0; i < numEdges; i++)
     {
-        fprintf(out, "%d\n", cost);
-        fclose(out);
+        int src = edges[i].src;
+        int dest = edges[i].dest;
+        int weight = edges[i].weight;
+
+        if (findSet(src, set) != findSet(dest, set))
+        {
+            MST[numEdgesMST++] = edges[i];
+            (*cost) += edges[i].weight;
+            joinSets(src, dest, set);
+        }
     }
 }
 
-void help()
+int checkArguments(int argc, char *argv[], int *printTerminal, int *inOrderAGM, FILE **inputFile, FILE **outputFILE)
 {
-    printf("-o <arquivo> : redireciona a saida para o arquivo\n");
-    printf("-f <arquivo> : indica o arquivo que contem o grafo de entrada\n");
-    printf("-s : mostra a solucao (em ordem crescente)\n");
-    printf("-i : vertice inicial\n");
-}
-
-int Parametro(int argc, char *argv[], bool *mostrarCmd, bool *ordem, int *iniVertice, FILE **input, FILE **output)
-{
-    int i;
     if (argc < 2)
     {
-        printf("precione -h para saber infromacoes\n");
-        return 0;
+        printf("Por favor use por exemplo: %s -f arquivo-entrada.dat\n", argv[0]);
+        return 1;
     }
-
-    for (i = 1; i < argc; i++)
+    for (int i = 1; i < argc; i++)
     {
         if (strcmp(argv[i], "-h") == 0)
         {
-            help();
-            return 0;
+
+            return 1;
         }
-        if (strcmp(argv[i], "-o") == 0)
+        else if (strcmp(argv[i], "-o") == 0)
         {
-            *mostrarCmd = false;
+            *printTerminal = 0;
             if (i < argc - 1)
             {
-                char *nome = argv[i + 1];
-                *output = fopen(nome, "w");
-                if (*output == NULL)
+                char *fileName = argv[i + 1];
+                *outputFILE = fopen(fileName, "w");
+
+                if (*outputFILE == NULL)
                 {
-                    printf("Erro ao abrir o arquivo.\n");
-                    return 0;
+                    printf("Erro ao abrir o arquivo %s.\n", fileName);
+                    return 1;
                 }
                 i++;
             }
             else
             {
-                printf("falta o arquivo\n");
-                return 0;
+                printf("Erro: Faltando nome do arquivo de saída depois do argumento -o\n");
+                return 1;
             }
         }
-        if (strcmp(argv[i], "-f") == 0)
+        else if (strcmp(argv[i], "-f") == 0)
         {
             if (i < argc - 1)
             {
-                char *nome = argv[i + 1];
-                *input = fopen(nome, "r");
-                if (*input == NULL)
+                char *fileName = argv[i + 1];
+                *inputFile = fopen(fileName, "r");
+
+                if (*inputFile == NULL)
                 {
-                    printf("Erro ao abrir o arquivo\n");
-                    return 0;
+                    printf("Erro ao abrir o arquivo %s.\n", fileName);
+                    return 1;
                 }
                 i++;
             }
             else
             {
-                printf("Falta o arquivo de entrada\n");
-                return 0;
+                printf("Erro: Faltando nome do arquivo de entrada depois do argumento -f\n");
+                return 1;
             }
         }
-        if (strcmp(argv[i], "-s") == 0)
+        else if (strcmp(argv[i], "-s") == 0)
         {
-            *ordem = true;
-        }
-        if (strcmp(argv[i], "-i") == 0)
-        {
-            if (i < argc - 1)
-            {
-                *iniVertice = atoi(argv[i + 1]);
-                i++;
-            }
-            else
-            {
-                printf("Falta valor inteiro\n");
-                return 0;
-            }
+            *inOrderAGM = 1;
         }
     }
-    return 1;
+    return 0;
 }
 
 int main(int argc, char *argv[])
 {
-    int iniVertice = 1, numVertex, numArestas, x1, x2, peso, cost = 0, i = 0;
-    bool ordem = false, mostrarCmd = true;
-    FILE *inputFile = NULL, *outputFile = NULL;
+    int numVertex, numEdges, vertex1, vertex2, edgeWeight, cost = 0;
+    int inOrderAGM = 0,
+        printTerminal = 1;
+    FILE *inputFile = NULL, *outputFILE = NULL;
 
-    if (Parametro(argc, argv, &mostrarCmd, &ordem, &iniVertice, &inputFile, &outputFile) != 1)
+    if (checkArguments(argc, argv, &printTerminal, &inOrderAGM, &inputFile, &outputFILE) != 0)
     {
-        return 0;
+        return 1;
     }
 
-    fscanf(inputFile, "%d %d", &numVertex, &numArestas);
+    fscanf(inputFile, "%d %d", &numVertex, &numEdges);
+    Edge edges[numEdges];
+    Edge MST[numVertex - 1];
 
-    No vector[numArestas];
-    No MST[numVertex - 1];
-
-    while (fscanf(inputFile, "%d %d %d", &x1, &x2, &peso) != EOF)
+    int i = 0;
+    while (fscanf(inputFile, "%d %d %d", &vertex1, &vertex2, &edgeWeight) != EOF)
     {
-        vector[i++] = (No){x1, x2, peso};
+        edges[i++] = (Edge){vertex1, vertex2, edgeWeight};
     }
-    Kruskal(vector, MST, &cost, numVertex, numArestas);
-    MostrarCaminho(MST, ordem, numVertex, cost, mostrarCmd, outputFile);
+
+    Kruskal(edges, MST, &cost, numVertex, numEdges);
+    printOut(MST, cost, numVertex, inOrderAGM, printTerminal, outputFILE);
+
+    fclose(inputFile);
+    return 0;
 }
