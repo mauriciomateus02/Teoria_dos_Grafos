@@ -106,7 +106,13 @@ void Kruskal(Edge edges[], Edge MST[], int *cost, int numVertex, int numEdges)
         }
     }
 }
-
+void help()
+{
+    printf("-o <arquivo> : redireciona a saida para o arquivo\n");
+    printf("-f <arquivo> : indica o arquivo que contem o grafo de entrada\n");
+    printf("-s : mostra a solucao (em ordem crescente)\n");
+    printf("-i : vertice inicial\n");
+}
 int checkArguments(int argc, char *argv[], int *printTerminal, int *inOrderAGM, FILE **inputFile, FILE **outputFILE)
 {
     if (argc < 2)
@@ -118,7 +124,7 @@ int checkArguments(int argc, char *argv[], int *printTerminal, int *inOrderAGM, 
     {
         if (strcmp(argv[i], "-h") == 0)
         {
-
+            help();
             return 1;
         }
         else if (strcmp(argv[i], "-o") == 0)
@@ -169,6 +175,7 @@ int checkArguments(int argc, char *argv[], int *printTerminal, int *inOrderAGM, 
     }
     return 0;
 }
+
 
 int main(int argc, char *argv[])
 {
