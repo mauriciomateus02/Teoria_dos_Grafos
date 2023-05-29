@@ -38,7 +38,6 @@ void addNo(No *no[], int x1, int x2, int peso)
     }
 }
 
-
 int compararVertices(const void *i, const void *j)
 {
 
@@ -57,23 +56,30 @@ void MostrarCaminho(ouNO vertices[], bool ordem, int numVert, int cost, bool mos
     if (ordem)
     {
         qsort(vertices, numVert - 1, sizeof(ouNO), compararVertices);
-    }
 
-    if (mostrarTela == true)
-    {
-        for (i = 0; i < numVert - 1; i++)
+        if (mostrarTela)
         {
-            printf("(%d,%d) ", vertices[i].vim, vertices[i].vou);
+            for (i = 0; i < numVert - 1; i++)
+            {
+                printf("(%d,%d) ", vertices[i].vim, vertices[i].vou);
+            }
         }
 
-        printf("\n%d\n", cost);
-    }
-    else
-    {
-        for (i = 0; i < numVert - 1; i++)
+        else
         {
-            fprintf(out, "(%d,%d) ", vertices[i].vim, vertices[i].vou);
+            for (i = 0; i < numVert - 1; i++)
+            {
+                fprintf(out, "(%d,%d) ", vertices[i].vim, vertices[i].vou);
+            }
+            fclose(out);
         }
+    }
+    if (!ordem && mostrarTela == true)
+    {
+        printf("%d\n", cost);
+    }
+    if (!ordem && !mostrarTela)
+    {
         fprintf(out, "%d\n", cost);
         fclose(out);
     }
@@ -89,7 +95,6 @@ bool Visitas(int vetor[], int num)
     }
     return true;
 }
-
 
 void Prim(No *no[], ouNO ouno[], int inicioVertice, int tamVertice, int *aux)
 {

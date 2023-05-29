@@ -1,7 +1,7 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
 
 struct No
 {
@@ -9,12 +9,12 @@ struct No
     int chega;
     int peso;
 
-}typedef No;
+} typedef No;
 
 int encontra(int index, int no[])
 {
-    if(index != no[index])
-        no[index] = encontra(no[index],no);
+    if (index != no[index])
+        no[index] = encontra(no[index], no);
     return no[index];
 }
 
@@ -30,7 +30,7 @@ int comparaPeso(const void *i, const void *j)
     struct No *ir = (struct No *)i;
     struct No *volta = (struct No *)j;
 
-   return (ir->peso - volta->peso);
+    return (ir->peso - volta->peso);
 }
 
 int compararRaiz(const void *i, const void *j)
@@ -46,25 +46,25 @@ int compararRaiz(const void *i, const void *j)
 
 void Kruskal(No vector[], No MST[], int *cont, int numVertices, int numArestas)
 {
-    int valor[numVertices+1],i,numArestasMst = 0;
+    int valor[numVertices + 1], i, numArestasMst = 0;
 
-    for ( i = 0; i < numVertices; i++)
+    for (i = 0; i < numVertices; i++)
     {
         valor[i] = i;
     }
-    qsort(vector,numArestas,sizeof(No),comparaPeso);
+    qsort(vector, numArestas, sizeof(No), comparaPeso);
 
-    for(i = 0; i < numArestas; i++)
+    for (i = 0; i < numArestas; i++)
     {
         int saio = vector[i].sai;
         int chego = vector[i].chega;
         int peso = vector[i].peso;
 
-        if(encontra(saio,valor) != encontra(chego,valor))
+        if (encontra(saio, valor) != encontra(chego, valor))
         {
             MST[numArestasMst++] = vector[i];
-            *cont += vector[i].peso; 
-            uneEncontrado(saio,chego,valor);
+            *cont += vector[i].peso;
+            uneEncontrado(saio, chego, valor);
         }
     }
 }
@@ -75,23 +75,30 @@ void MostrarCaminho(No vertices[], bool ordem, int numVert, int cost, bool mostr
     if (ordem)
     {
         qsort(vertices, numVert - 1, sizeof(No), compararRaiz);
+
+        if (mostrarTela)
+        {
+            for (i = 0; i < numVert - 1; i++)
+            {
+                printf("(%d,%d) ", vertices[i].sai, vertices[i].chega);
+            }
+        }
+        else
+        {
+            for (i = 0; i < numVert - 1; i++)
+            {
+                fprintf(out, "(%d,%d) ", vertices[i].sai, vertices[i].chega);
+            }
+            fclose(out);
+        }
     }
 
-    if (mostrarTela == true)
+    if (!ordem && mostrarTela)
     {
-        for (i = 0; i < numVert - 1; i++)
-        {
-            printf("(%d,%d) ", vertices[i].sai, vertices[i].chega);
-        }
-
-        printf("\n%d\n", cost);
+        printf("%d\n", cost);
     }
-    else
+    if(!ordem && !mostrarTela)
     {
-        for (i = 0; i < numVert - 1; i++)
-        {
-            fprintf(out, "(%d,%d) ", vertices[i].sai, vertices[i].chega);
-        }
         fprintf(out, "%d\n", cost);
         fclose(out);
     }
@@ -183,7 +190,7 @@ int Parametro(int argc, char *argv[], bool *mostrarCmd, bool *ordem, int *iniVer
 
 int main(int argc, char *argv[])
 {
-    int iniVertice = 1, numVertex, numArestas, x1, x2, peso, cost = 0,i = 0;
+    int iniVertice = 1, numVertex, numArestas, x1, x2, peso, cost = 0, i = 0;
     bool ordem = false, mostrarCmd = true;
     FILE *inputFile = NULL, *outputFile = NULL;
 
@@ -195,12 +202,12 @@ int main(int argc, char *argv[])
     fscanf(inputFile, "%d %d", &numVertex, &numArestas);
 
     No vector[numArestas];
-    No MST[numVertex-1];
+    No MST[numVertex - 1];
 
     while (fscanf(inputFile, "%d %d %d", &x1, &x2, &peso) != EOF)
     {
         vector[i++] = (No){x1, x2, peso};
     }
     Kruskal(vector, MST, &cost, numVertex, numArestas);
-    MostrarCaminho(MST,ordem,numVertex,cost,mostrarCmd,outputFile);
+    MostrarCaminho(MST, ordem, numVertex, cost, mostrarCmd, outputFile);
 }
